@@ -1,0 +1,241 @@
+---
+date: 2023-05-25
+output: html_document
+title: "Paiche"
+---
+
+```{r, setup, include=FALSE}  
+knitr::opts_knit$set(root.dir = "~/op_projects/paiche-pesca-ilegal/")
+```
+
+Responderemos la siguiente información sobre la data de paiche:
+- ¿Cuántas observaciones y cuántas variables hay en la base?
+
+## Importar datos procesados
+    
+```{r} 
+library(tidyverse)
+library(lubridate)
+library(googlesheets4)
+library(DT)
+
+# Importar datos
+comercio_paiche <- read_sheet(
+    "https://docs.google.com/spreadsheets/d/1R8dvmR_qwaWnozbKpNVULuD_Nw_VlX_7PCUrPaCG1OE/edit#gid=0"
+) 
+```
+
+## Explorando datos
+```{r}
+comercio_paiche %>% 
+    glimpse()
+```
+
+```{r}
+comercio_paiche %>% 
+    count(Term,sort = T)
+```
+
+```{r}
+comercio_paiche %>% 
+    count(Purpose,sort = T)
+```
+```{r}
+comercio_paiche %>% 
+    count(Source,sort = T)
+```
+
+```{r}
+comercio_paiche %>% 
+    count(Term, Unit,sort = T)  %>% 
+    datatable()
+```
+
+## Limpiando datos 
+
+```{r}
+comercio_paiche <- comercio_paiche %>% 
+    mutate(
+        Term = case_when(
+            Term == 'bodies' ~ "Cuerpos",
+            Term == 'bones' ~ "Huesos",
+            Term == 'carvings' ~ "Productos tallados",
+            Term == 'cloth' ~ "Tela",
+            Term == 'derivatives' ~ "Derivados",
+            Term == 'fingerlings' ~ "Jaramugos (Cría de pez)",
+            Term == 'garments' ~ "Prendas",
+            Term == 'leather products (large)' ~ "Cuero grande",
+            Term == 'leather products (small)' ~ "Cuero pequeño",
+            Term == 'live' ~ "Vivo",
+            Term == 'meat' ~ "Carne",
+            Term == 'plates' ~ "Napa (Fibra textil)",
+            Term == 'scales' ~ "Escamas",
+            Term == 'skin pieces' ~ "Piezas de piel",
+            Term == 'specimens' ~ "Especímenes",
+            Term == 'trophies' ~ "Trofeos",
+            Term == 'unspecified' ~ "Sin específicar",
+            Term == 'fins' ~ "Aletas",
+            Term == 'jewellery' ~ "Joyería",
+            Term == 'skeletons' ~ "Esqueletos",
+            Term == 'skins' ~ "Pieles"
+
+        )
+    )
+```
+
+
+## Comparando Términos y Unidades a nivel mundial
+
+```{r}
+plot_comparacion <- comercio_paiche %>% 
+    group_by(Term,Unit) %>% 
+    summarise(
+        cantidad_importador = sum(`Importer reported quantity` ,na.rm = T),
+        cantidad_exportador = sum(`Exporter reported quantity`,na.rm = T)
+    )  %>% 
+    pivot_longer(3:4, names_to = "tipo", values_to = "cantidad") %>% 
+    ggplot(
+        aes(x=tipo, y = cantidad , fill = tipo)
+    )+
+    geom_bar(stat = "identity", position = "dodge")+
+    facet_grid(Term~Unit, scales = "free", space = "free_x", labeller = labeller(Term = label_wrap_gen(width = 16)))+
+    theme_bw() +
+      theme(strip.text.y = element_text(angle = 0),
+            legend.position = "none")
+
+plot_comparacion
+```
+
+```{r}
+#guardar plot_comparacion en png
+ggsave(
+    filename = "plots/plot_comparacion_mundo_paiche.png",
+    plot = plot_comparacion,
+    width = 30,
+    height = 30,
+    units = "cm"
+)
+```
+
+## Comparando Términos y Unidades a nivel Perú
+```{r}
+library(scales)
+plot_comparacion <- comercio_paiche %>% 
+    filter(Exporter == 'PE') %>% 
+    group_by(Term,Unit) %>% 
+    summarise(
+        cantidad_importador = sum(`Importer reported quantity` ,na.rm = T),
+        cantidad_exportador = sum(`Exporter reported quantity`,na.rm = T)
+    )  %>% 
+    pivot_longer(3:4, names_to = "tipo", values_to = "cantidad") %>% 
+    ggplot(
+        aes(x=tipo, y = cantidad , fill = tipo)
+    )+
+    geom_bar(stat = "identity", position = "dodge")+
+    facet_grid(Term~Unit, scales = "free", space = "free_x", labeller = labeller(Term = label_wrap_gen(width = 16)))+
+    theme_bw() +
+      theme(strip.text.y = element_text(angle = 0),
+            legend.position = "none")
+
+
+    
+plot_comparacion
+```
+
+```{r}
+#guardar plot_comparacion en png
+ggsave(
+    filename = "plots/plot_comparacion_peru_paiche.png",
+    plot = plot_comparacion,
+    width = 30,
+    height = 30,
+    units = "cm"
+)
+```
+
+## Comparando Términos y Unidades a nivel Brazil
+
+```{r}
+library(scales)
+plot_comparacion <- comercio_paiche %>% 
+    filter(Exporter == 'BR') %>% 
+    group_by(Term,Unit) %>% 
+    summarise(
+        cantidad_importador = sum(`Importer reported quantity` ,na.rm = T),
+        cantidad_exportador = sum(`Exporter reported quantity`,na.rm = T)
+    )  %>% 
+    pivot_longer(3:4, names_to = "tipo", values_to = "cantidad") %>% 
+    ggplot(
+        aes(x=tipo, y = cantidad , fill = tipo)
+    )+
+    geom_bar(stat = "identity", position = "dodge")+
+    facet_grid(Term~Unit, scales = "free", space = "free_x", labeller = labeller(Term = label_wrap_gen(width = 16)))+
+    theme_bw() +
+      theme(strip.text.y = element_text(angle = 0),
+            legend.position = "none")
+
+
+    
+plot_comparacion
+```
+
+```{r}
+#guardar plot_comparacion en png
+ggsave(
+    filename = "plots/plot_comparacion_brasil_paiche.png",
+    plot = plot_comparacion,
+    width = 30,
+    height = 30,
+    units = "cm"
+)
+```
+
+
+
+
+## Evolución de exportaciones de carne en Kg de Paiche
+
+```{r}
+comercio_paiche %>% 
+    filter(Unit == 'kg',
+           Term  == 'Carne') %>%
+    group_by(Exporter, Year,) %>% 
+    summarise(
+        kg = sum(`Exporter reported quantity`, na.rm = T)
+    ) %>% 
+    ggplot(
+        aes(x = Year, y = kg, color = Exporter)
+    )+
+    geom_line()
+```
+
+```{r}
+carne_paiche_peru_vs_brazil <- comercio_paiche %>% 
+    filter(Unit == 'kg',
+           Term  == 'Carne',
+           Exporter %in% c("BR","PE")) %>%
+    group_by(Exporter, Year) %>% 
+    summarise(
+        kg_importador = sum(`Importer reported quantity`, na.rm = T),
+        kg_exportador = sum(`Exporter reported quantity`, na.rm = T)
+    ) %>% 
+    pivot_longer(3:4, names_to = "tipo", values_to = "kg") %>%
+    ggplot(
+        aes(x = Year, y = kg, fill = tipo)
+    )+
+    geom_col(position = "dodge")+
+    facet_wrap(~Exporter)+
+    scale_x_continuous(name="Year", labels=as.character(comercio_paiche$Year), breaks = comercio_paiche$Year)
+carne_paiche_peru_vs_brazil
+```
+
+```{r}
+#guardar plot_comparacion en png
+ggsave(
+    filename = "plots/plot_carne_paiche_peru_vs_brazil.png",
+    plot = carne_paiche_peru_vs_brazil,
+    width = 45,
+    height = 20,
+    units = "cm"
+)
+```
