@@ -1,0 +1,37 @@
+---
+date: 2023-05-26
+output: html_document
+title: "Paiche CITES"
+---
+
+```{r}
+knitr::opts_knit$set(root.dir = "~/op_projects/paiche-pesca-ilegal/")
+```
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(googlesheets4)
+library(DT)
+library(readxl)
+
+# Importar datos
+exportaciones_paiche_peru <- read_excel("data/Panjiva-Peru_Exports-all-results_1_to_926_of_926-2023-05-26-11-59.xlsx") %>% 
+    filter(str_detect(`Código HS`, regex("03[0-9]{8}"))) 
+
+exportaciones_paiche_brazil <- read_excel("data/Panjiva-Brazil_Exports-all-results_1_to_29_of_29-2023-05-26-11-45.xlsx") %>% 
+    filter(str_detect(`Código HS`, regex("^03.*")))
+
+```
+
+```{r}
+exportaciones_paiche_peru  %>% 
+    write_sheet("https://docs.google.com/spreadsheets/d/16UjO4SlSlkXKTl7CiD0xXVA4GMt9GuPz4uVWeS-OoXc/edit#gid=0", "peru")
+
+
+```
+```{r}
+exportaciones_paiche_brazil  %>% 
+    write_sheet("https://docs.google.com/spreadsheets/d/16UjO4SlSlkXKTl7CiD0xXVA4GMt9GuPz4uVWeS-OoXc/edit#gid=0", "brazil")
+```

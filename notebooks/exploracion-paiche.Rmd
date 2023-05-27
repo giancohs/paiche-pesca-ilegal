@@ -1,7 +1,7 @@
 ---
 date: 2023-05-25
 output: html_document
-title: "Paiche"
+title: "Paiche CITES"
 ---
 
 ```{r, setup, include=FALSE}  
@@ -238,4 +238,11 @@ ggsave(
     height = 20,
     units = "cm"
 )
+```
+
+```{r}
+comercio_paiche %>% 
+    filter(Unit == 'kg',
+           Term  == 'Carne') %>%
+    write_sheet("https://docs.google.com/spreadsheets/d/1lrW__w7Zl6H3cUPyxSMn8az2Wc-oX2ZJfc4oWWUCkSE/edit#gid=0","data")
 ```
